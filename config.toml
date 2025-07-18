@@ -1,0 +1,37 @@
+appName = "chat_room"
+
+[mysql]
+host = "localhost"
+name = "go-chat-message"
+password = "root1234"
+port = 3306
+tablePrefix = ""
+user = "root"
+
+[postgres]
+host = "localhost"
+port = 5432
+user = "catcal"
+password = "catcal123456"
+dbname = "catcal"
+
+[log]
+level = "debug"
+path = "logs/chat.log"
+
+[staticPath]
+filePath = "web/static/file/"
+
+[msgChannelType]
+channelType = "gochannel"
+
+kafkaHosts = "localhost:9092"
+kafkaTopic = "go-chat-message"
+
+[server]
+port = 8888
+host = "0.0.0.0"
+
+[catcal]
+api_url = "http://localhost:8082"
+api_version = "v1"
