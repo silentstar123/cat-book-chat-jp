@@ -100,13 +100,19 @@ func (s *UserSyncService) SyncUserToChat(userID int) error {
 	}
 
 	// 检查用户是否已存在
-	existingUser := UserService.GetUserDetails(user.Account)
-	if existingUser.Id != 0 {
+	existingUser, err := UserService.GetUserDetails(user.Account)
+	if err == nil && existingUser.ID != 0 {
 		// 更新用户信息
 		existingUser.Nickname = user.Nickname
-		existingUser.Avatar = user.Avatar
-		existingUser.Email = user.Email
-		return UserService.ModifyUserInfo(&existingUser)
+		// existingUser.Avatar = user.Avatar // PostgresUser没有Avatar字段
+		if user.Email != "" {
+			existingUser.Email = &user.Email
+		}
+		return UserService.ModifyUserInfo(&model.User{
+			Account:  existingUser.Account,
+			Nickname: existingUser.Nickname,
+			Email:    user.Email,
+		})
 	}
 
 	// 创建新用户

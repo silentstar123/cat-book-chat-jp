@@ -28,34 +28,25 @@ func (m *messageService) GetMessageList(account string) ([]response.ChatSummary,
 	}
 
 	var summaries []response.ChatSummary
-	db := pool.GetDB()
+	db := pool.GetPostgresDB()
 	pgdb := pool.GetPostgresDB()
 
-	// 查询每个会话的最新消息和未读消息数量
+	// 简化查询，先获取会话列表
 	err := db.Raw(`
 	SELECT 
 		CASE 
 			WHEN m.from_account = ? THEN m.to_account 
 			ELSE m.from_account 
-		END AS Account,
-		MAX(m.created_at) AS LatestTime,
-		(SELECT content 
-		 FROM messages 
-		 WHERE id = (
-			SELECT id FROM messages 
-			WHERE (from_account = ? AND to_account = Account) OR (from_account = Account AND to_account = ?)
-			ORDER BY created_at DESC 
-			LIMIT 1
-		 )
-		) AS LatestContent,
+		END AS "Account",
+		MAX(m.created_at) AS "LatestTime",
 		COUNT(CASE 
 			WHEN m.to_account = ? AND m.is_read = 0 THEN 1 
 			ELSE NULL 
-		END) AS UnreadCount
+		END) AS "UnreadCount"
 	FROM messages m
 	WHERE m.from_account = ? OR m.to_account = ?
-	GROUP BY Account;
-	`, account, account, account, account, account, account).Scan(&summaries).Error
+	GROUP BY "Account";
+	`, account, account, account, account).Scan(&summaries).Error
 
 	if err != nil {
 		return nil, err
@@ -98,7 +89,7 @@ func (m *messageService) GetMessageList(account string) ([]response.ChatSummary,
 }
 
 func (m *messageService) GetMessages(message request.MessageRequest) ([]response.MessageResponse, error) {
-	db := pool.GetDB()
+	db := pool.GetPostgresDB()
 
 	// 自动迁移消息表结构
 	// migrate := &model.Message{}
@@ -212,8 +203,8 @@ func (m *messageService) fetchGroupMessages(db *gorm.DB, message request.Message
 	return messages, nil
 }
 
-func (m *messageService) SaveMessage(message protocol.Message) {
-	db := pool.GetDB()
+func (m *messageService) SaveMessage(message protocol.Message) error {
+	db := pool.GetPostgresDB()
 	// var fromUser model.User
 	// db.Find(&fromUser, "account = ?", message.From)
 	// if NULL_ID == fromUser.Id {
@@ -236,7 +227,7 @@ func (m *messageService) SaveMessage(message protocol.Message) {
 		var group model.Group
 		db.Find(&group, "uuid = ?", message.To)
 		if NULL_ID == group.ID {
-			return
+			return errors.New("群组不存在")
 		}
 		ToAccount = group.Uuid
 	}
@@ -249,5 +240,5 @@ func (m *messageService) SaveMessage(message protocol.Message) {
 		MessageType: int16(message.MessageType),
 		Url:         message.Url,
 	}
-	db.Save(&saveMessage)
+	return db.Save(&saveMessage).Error
 }

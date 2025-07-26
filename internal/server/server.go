@@ -127,10 +127,9 @@ func sendGroupMessage(msg *protocol.Message, s *Server) {
 			continue
 		}
 
-		fromUserDetails := service.UserService.GetUserDetails(msg.From)
 		// 由于发送群聊时，from是个人，to是群聊uuid。所以在返回消息时，将form修改为群聊uuid，和单聊进行统一
 		msgSend := protocol.Message{
-			Avatar:       fromUserDetails.Avatar,
+			Avatar:       "", // PostgresUser没有Avatar字段，暂时设为空字符串
 			FromUsername: msg.FromUsername,
 			From:         msg.To,
 			To:           msg.From,

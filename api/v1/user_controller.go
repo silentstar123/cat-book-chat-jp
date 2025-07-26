@@ -53,26 +53,45 @@ func ModifyUserInfo(c *gin.Context) {
 func GetUserDetails(c *gin.Context) {
 	uuid := c.Param("uuid")
 
-	c.JSON(http.StatusOK, response.SuccessMsg(service.UserService.GetUserDetails(uuid)))
+	user, err := service.UserService.GetUserDetails(uuid)
+	if err != nil {
+		c.JSON(http.StatusOK, response.FailMsg(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, response.SuccessMsg(user))
 }
 
 // 通过用户名获取用户信息
 func GetUserOrGroupByName(c *gin.Context) {
 	name := c.Query("name")
 
-	c.JSON(http.StatusOK, response.SuccessMsg(service.UserService.GetUserOrGroupByName(name)))
+	users, err := service.UserService.GetUserOrGroupByName(name)
+	if err != nil {
+		c.JSON(http.StatusOK, response.FailMsg(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, response.SuccessMsg(users))
 }
 
 func GetUserList(c *gin.Context) {
-	account := c.Query("account")
-	c.JSON(http.StatusOK, response.SuccessMsg(service.UserService.GetUserList(account)))
+	users, err := service.UserService.GetUserList()
+	if err != nil {
+		c.JSON(http.StatusOK, response.FailMsg(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, response.SuccessMsg(users))
 }
 
 func AddFriend(c *gin.Context) {
 	var userFriendRequest request.FriendRequest
 	c.ShouldBindJSON(&userFriendRequest)
 
-	err := service.UserService.AddFriend(&userFriendRequest)
+	// 创建用户对象用于添加好友
+	user := &model.User{
+		Account: userFriendRequest.FriendAccount,
+	}
+
+	err := service.UserService.AddFriend(user)
 	if nil != err {
 		c.JSON(http.StatusOK, response.FailMsg(err.Error()))
 		return

@@ -2,7 +2,7 @@ appName = "chat_room"
 
 [mysql]
 host = "localhost"
-name = "go-chat-message"
+name = "nonexistent_db"
 password = "root1234"
 port = 3306
 tablePrefix = ""

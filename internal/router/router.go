@@ -32,6 +32,7 @@ func NewRouter() *gin.Engine {
 		group.POST("/friend", v1.AddFriend)
 
 		group.GET("/message", v1.GetMessage)
+		group.POST("/message", v1.SendMessage)
 		group.GET("/messages", v1.GetMessageList)
 
 		group.GET("/group/:account", v1.GetGroup)

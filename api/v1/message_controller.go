@@ -7,6 +7,7 @@ import (
 	"chat-room/pkg/common/request"
 	"chat-room/pkg/common/response"
 	"chat-room/pkg/global/log"
+	"chat-room/pkg/protocol"
 
 	"github.com/gin-gonic/gin"
 )
@@ -45,4 +46,38 @@ func GetMessageList(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"code": 200, "message": "success", "data": summaries})
+}
+
+// 发送消息
+func SendMessage(c *gin.Context) {
+	var messageRequest struct {
+		From        string `json:"from" binding:"required"`
+		To          string `json:"to" binding:"required"`
+		Content     string `json:"content" binding:"required"`
+		ContentType int16  `json:"contentType" default:"1"`
+		MessageType int16  `json:"messageType" default:"1"`
+	}
+
+	if err := c.ShouldBindJSON(&messageRequest); err != nil {
+		c.JSON(http.StatusOK, response.FailMsg("参数错误: "+err.Error()))
+		return
+	}
+
+	// 创建消息对象
+	message := protocol.Message{
+		From:        messageRequest.From,
+		To:          messageRequest.To,
+		Content:     messageRequest.Content,
+		ContentType: int32(messageRequest.ContentType),
+		MessageType: int32(messageRequest.MessageType),
+	}
+
+	// 保存消息到数据库
+	err := service.MessageService.SaveMessage(message)
+	if err != nil {
+		c.JSON(http.StatusOK, response.FailMsg("发送消息失败: "+err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SuccessMsg("消息发送成功"))
 }

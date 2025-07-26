@@ -4,8 +4,8 @@ import "time"
 
 type MessageResponse struct {
 	ID          int32     `json:"id" gorm:"primarykey"`
-	FromAccount int32     `json:"FromAccount" gorm:"index"`
-	ToAccount   int32     `json:"ToAccount" gorm:"index"`
+	FromAccount string    `json:"FromAccount" gorm:"index"`
+	ToAccount   string    `json:"ToAccount" gorm:"index"`
 	Content     string    `json:"content" gorm:"type:varchar(2500)"`
 	ContentType int16     `json:"contentType" gorm:"comment:'消息内容类型：1文字，2语音，3视频'"`
 	CreatedAt   time.Time `json:"createAt"`
