@@ -24,3 +24,6 @@ test/logs
 static/img/*
 web/static/file/*
 !web/static/file/.gitkeep
+
+#tmp files
+tmp/
